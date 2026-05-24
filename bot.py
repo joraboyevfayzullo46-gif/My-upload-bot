@@ -1,18 +1,16 @@
 
-  
+        
 import os
 import telebot
 import yt_dlp
-from flask import Flask, request
 
-# Token server muhitidan olinadi
+# Koyeb serverida token mana shu qatordan olinadi
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
-server = Flask(__name__)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "Salom! Menga Instagram Reels, TikTok, YouTube Shorts yoki Snapchat havolasini yuboring. 24/7 rejimda yuklab beraman! 🚀")
+    bot.reply_to(message, "Salom! Menga Instagram Reels, TikTok, YouTube Shorts yoki Snapchat havolasini yuboring. Telefoningiz o'chig'ida ham yuklab beraman! 🚀")
 
 @bot.message_handler(func=lambda message: True)
 def download_video(message):
@@ -20,7 +18,7 @@ def download_video(message):
     
     if any(p in url for p in ["instagram.com", "tiktok.com", "youtube.com", "youtu.be", "snapchat.com"]):
         status_msg = bot.reply_to(message, "Video yuklanmoqda... ⏳")
-        video_filename = "/tmp/downloaded_video.mp4"
+        video_filename = "downloaded_video.mp4"
         
         ydl_opts = {
             'format': 'best[ext=mp4]/best',
@@ -50,21 +48,6 @@ def download_video(message):
     else:
         bot.reply_to(message, "Iltimos, faqat Instagram, TikTok, YouTube yoki Snapchat havolasini yuboring! ⚠️")
 
-# Webhook'ni mutlaqo to'g'ri ulash tizimi
-@server.route('/' + BOT_TOKEN, methods=['POST'])
-def getMessage():
-    json_string = request.stream.read().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
-
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    url = os.environ.get('RENDER_EXTERNAL_URL')
-    bot.set_webhook(url=url + '/' + BOT_TOKEN)
-    return "Bot Serverda Faol!", 200
-
-if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-        
+print("Bot serverda uzluksiz ishga tushdi...")
+bot.infinity_polling()
+           
